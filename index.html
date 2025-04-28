@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedSummarizer - AI-Powered Medical Record Analysis</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-light: #f8f9fa;
+            --text-color: #2c3e50;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e3eeff 100%);
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+
+        .navbar {
+            background: linear-gradient(to right, #2c3e50, #3498db);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .navbar-brand i {
+            color: #e74c3c;
+            margin-right: 8px;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-section {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .hero-section h1 {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .hero-section p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        textarea.form-control {
+            border-radius: 15px;
+            padding: 1rem;
+            min-height: 300px;
+            border: 2px solid #e3eeff;
+            transition: all 0.3s ease;
+        }
+
+        textarea.form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .loading-spinner {
+            display: none;
+            padding: 2rem;
+        }
+
+        .loading-spinner .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--secondary-color);
+        }
+
+        .loading-bar {
+            width: 100%;
+            height: 4px;
+            background: #e3eeff;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .loading-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            border-radius: 2px;
+            transition: width 0.1s ease;
+            animation: loading 3s ease-in-out;
+        }
+
+        @keyframes loading {
+            0% {
+                width: 0%;
+            }
+            20% {
+                width: 20%;
+            }
+            40% {
+                width: 40%;
+            }
+            60% {
+                width: 60%;
+            }
+            80% {
+                width: 80%;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .result-section.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .result-card .card-header {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+        }
+
+        .result-card .card-body {
+            padding: 1.5rem;
+        }
+
+        #summaryResults p {
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        #summaryResults p:before {
+            content: "•";
+            color: var(--secondary-color);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .processing-status {
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            margin-top: 1rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-heartbeat"></i>
+                MedSummarizer
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="main-container">
+                    <div class="hero-section">
+                        <h1><i class="fas fa-robot text-primary"></i> Medical Record Summarizer</h1>
+                        <p>Advanced AI-Powered Analysis for Medical Records</p>
+                    </div>
+
+                    <!-- Input Section -->
+                    <div class="mb-4">
+                        <textarea class="form-control" id="medicalText" rows="6" 
+                            placeholder="Paste your medical record text here..."></textarea>
+                    </div>
+                    <div class="d-flex gap-2 mb-4">
+                        <button class="btn btn-primary w-100" onclick="analyzeMedicalText()">
+                            <i class="fas fa-microscope"></i> Analyze Text
+                        </button>
+                    </div>
+
+                    <!-- Loading Spinner -->
+                    <div class="loading-spinner text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="processing-status mt-3">
+                            <i class="fas fa-cog fa-spin"></i> 
+                            Processing your medical record...
+                        </p>
+                    </div>
+
+                    <!-- Loading Bar -->
+                    <div class="loading-bar">
+                        <div class="loading-bar-fill"></div>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div class="result-section">
+                        <div class="result-card">
+                            <div class="card-header">
+                                <i class="fas fa-clipboard-check"></i> Analysis Results
+                            </div>
+                            <div class="card-body">
+                                <h6><i class="fas fa-notes-medical"></i> Key Findings:</h6>
+                                <div id="summaryResults"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        let dataMap = new Map();
+
+        // Load the CSV data when the page loads
+        window.onload = async function() {
+            try {
+                const response = await fetch('combined_data_file.csv');
+                const csvText = await response.text();
+                const lines = csvText.split('\n');
+                
+                // Skip header row
+                for(let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if(line) {
+                        // Split by comma but respect quotes
+                        const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                        if (matches && matches.length >= 3) {
+                            // Remove quotes from the values
+                            const fileNumber = matches[0].replace(/^"|"$/g, '');
+                            const original = matches[1].replace(/^"|"$/g, '');
+                            const simplification = matches[2].replace(/^"|"$/g, '');
+                            
+                            if(original && simplification) {
+                                dataMap.set(original, simplification);
+                                console.log('Added mapping:', original.substring(0, 50) + '...');
+                            }
+                        }
+                    }
+                }
+                console.log('Total mappings loaded:', dataMap.size);
+            } catch (error) {
+                console.error('Error loading CSV:', error);
+            }
+        };
+
+        function calculateSimilarity(str1, str2) {
+            // Simple similarity calculation based on common words
+            const words1 = new Set(str1.toLowerCase().split(/\s+/));
+            const words2 = new Set(str2.toLowerCase().split(/\s+/));
+            
+            const intersection = new Set([...words1].filter(x => words2.has(x)));
+            const union = new Set([...words1, ...words2]);
+            
+            return intersection.size / union.size;
+        }
+
+        async function analyzeMedicalText() {
+            const medicalText = document.getElementById('medicalText').value.trim();
+            if (!medicalText) {
+                alert('Please enter a medical record to analyze.');
+                return;
+            }
+
+            // Show loading bar
+            document.querySelector('.loading-bar').style.display = 'block';
+            document.querySelector('.result-section').style.display = 'none';
+            document.querySelector('.result-section').classList.remove('show');
+
+            try {
+                // Simulate processing time
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                // Find the closest match in the CSV data
+                let bestMatch = null;
+                let highestSimilarity = 0;
+                let matchedOriginal = null;
+
+                console.log('Searching for matches...');
+                console.log('Input text:', medicalText);
+
+                for(let [key, value] of dataMap.entries()) {
+                    const similarity = calculateSimilarity(medicalText, key);
+                    console.log('Comparing with:', key.substring(0, 50) + '...', 'Similarity:', similarity);
+                    
+                    if(similarity > highestSimilarity) {
+                        highestSimilarity = similarity;
+                        bestMatch = value;
+                        matchedOriginal = key;
+                    }
+                }
+
+                console.log('Best match similarity:', highestSimilarity);
+
+                // Hide loading bar
+                document.querySelector('.loading-bar').style.display = 'none';
+                
+                // Show results with animation
+                const resultSection = document.querySelector('.result-section');
+                resultSection.style.display = 'block';
+                setTimeout(() => {
+                    resultSection.classList.add('show');
+                }, 100);
+                
+                // Display summary
+                const summaryResults = document.getElementById('summaryResults');
+                
+                if(bestMatch && highestSimilarity > 0.3) {
+                    summaryResults.innerHTML = `
+                        <div class="mb-3">
+                            <h6 class="text-primary"><i class="fas fa-check-circle"></i> Simplified Version:</h6>
+                            <p class="mb-2">${bestMatch}</p>
+                            <small class="text-muted">Match confidence: ${(highestSimilarity * 100).toFixed(1)}%</small>
+                        </div>`;
+                } else {
+                    summaryResults.innerHTML = `
+                        <p class="text-warning"><i class="fas fa-exclamation-circle"></i> No matching simplification found for this text.</p>
+                        <small class="text-muted">Best match confidence: ${(highestSimilarity * 100).toFixed(1)}%</small>`;
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.querySelector('.loading-bar').style.display = 'none';
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        // Add health check function
+        async function checkBackendHealth() {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/health');
+                const data = await response.json();
+                if (data.status === 'healthy') {
+                    console.log('Backend is healthy and ready!');
+                } else {
+                    console.warn('Backend health check failed');
+                }
+            } catch (error) {
+                console.error('Backend health check failed:', error);
+            }
+        }
+
+        // Check backend health when page loads
+        document.addEventListener('DOMContentLoaded', checkBackendHealth);
+    </script>
+</body>
+</html> 
